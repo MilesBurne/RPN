@@ -9,30 +9,42 @@ def shuntingYardAlgo(infixEquation):
     numberStack = [] # number stack in practice
     operationStack = [] #operator stack in practice
     BODMAS = {"(":1,")":1,"^":2,"/":3,"*":4,"+":5,"-":6} # tells shunting what BODMAS is and priority of operators
-    associative = {"^":"R","*":"L","/":"L","+":"L","-":"L"}
+    associative = {"^":"R","*":"L","/":"L","+":"L","-":"L","(":"G",")":"G"} # "G" to prevent key errors
     
     if len(infixEquation) != 0:
         conversionLoop = True
         infixPos = 0 #position of number/letter
+
     while conversionLoop == True:
+        #in program display of workings
+        '''
+        print("     "+str(infixPos))
+        print(infixEquation[infixPos])
+        print("PE: ", postfixEquation)
+        print("OP: ", operationStack)
+        '''
         #get token
-        print(postfixEquation)
         token = list(infixEquation)[infixPos]
         #read the token
         try:
             x = int(token) #if token is number
-            postfixEquation.append(x)
+            postfixEquation.append(str(x))
             
         except: #token not number
-            
+    
             #if token is operator
             if token in BODMAS:
+                
                 while len(operationStack) != 0: # while operator stack is not empty
-                    if (BODMAS[token] < BODMAS(operationStack[-1:])) or ((BODMAS[token] == BODMAS[operationStack[-1:]]) and (associative[operationStack[-1:]])) == ("L" and operationStack[-1:] != "("):
-                        postfixEquation = operationStack.pop() #pop from stack to equation
+                    if (BODMAS[token] > BODMAS[str(operationStack[len(operationStack)-1])]) or ((BODMAS[token] == BODMAS[str(operationStack[len(operationStack)-1])]) and (associative[str(operationStack[len(operationStack)-1])])) == "L" and (operationStack[len(operationStack)-1] != "("):
+                        if token != "(" and token != ")" and (operationStack[len(operationStack)-1] != "("):
+                            postfixEquation.append(operationStack.pop()) #pop from stack to equation
+                        else:
+                            break
                     else:
                          break
-                operationStack.append(token)
+                if token != "(" and token != ")":
+                    operationStack.append(token)
 
             #if token is left bracket
             if token == "(":
@@ -40,27 +52,30 @@ def shuntingYardAlgo(infixEquation):
 
             #if token is a right bracket
             if token == ")":
-                while len(operationStack) != 0:
-                    if operationStack[-1:] != "(":
-                        postfixEquation = operationStack.pop() #pop from stack to equation
-                    else:
-                        break
-                if len(operationStack) == 0 and postfixEquation[-1:] != "(":
+                #backLoop = len(operationStack)
+                for x in operationStack:
+                    if len(operationStack) != 0:
+                        if operationStack[len(operationStack)-1] != "(":
+                            postfixEquation.append(operationStack.pop()) #pop from stack to equation
+                        else:
+                            break
+                if "(" not in operationStack:
                         print("Mismatched brackets")
                         quit()
-
                 operationStack.pop() #pop left bracket from stack
 
-            #checking if end
-            if len(infixEquation) != 0:
-                while len(operationStack) != 0:
-                    postfixEquation.append(operationStack.pop())
-                conversionLoop = True
-                infixPos = 0 #position of number/letter
-        infixPos += 1
-    return(postfixEquation) #end
+        infixPos += 1  
+        #checking if end
+        if infixPos == len(infixEquation):
+            while len(operationStack) != 0:
+                postfixEquation.append(operationStack.pop())
+            conversionLoop = False
+            infixPos = 0 #position of number/letter
+            break
+        
+    return("".join(postfixEquation)) #end
 
-
-
-
-print(shuntingYardAlgo("5+5*6"))
+while True:
+    equation = input("Please enter the desired INFIX equation: ")
+    print("Equation:         ", equation)
+    print("Postfix equation: ", shuntingYardAlgo(equation))
